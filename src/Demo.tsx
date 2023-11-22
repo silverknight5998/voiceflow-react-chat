@@ -37,7 +37,6 @@ export const Demo: React.FC = () => {
   };
 
   const handleSend = (message: string) => {
-    console.log(runtime);
     if (liveAgent.isEnabled) {
       liveAgent.sendUserReply(message);
     } else {
@@ -54,7 +53,7 @@ export const Demo: React.FC = () => {
 
     mediaRecorder.ondataavailable = (event) => {
       console.log('data', event.data);
-      setAudioChunks((prevAudioChunks) => [...prevAudioChunks, event.data]);
+      setAudioChunks([...audioChunks, event.data]);
     };
   };
 
