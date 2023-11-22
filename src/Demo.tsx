@@ -62,9 +62,9 @@ export const Demo: React.FC = () => {
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks);
-        console.log(audioBlob);
         const formData = new FormData();
         formData.append('file', new File([audioBlob], 'audio.wav', { type: audioBlob.type }));
+        console.log(formData);
         const response = await fetch('localhost:4000/upload', {
           method: 'POST',
           headers: {
