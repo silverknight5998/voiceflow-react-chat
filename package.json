@@ -13,6 +13,8 @@
     "@voiceflow/fetch": "1.5.2",
     "@voiceflow/react-chat": "1.46.1",
     "@voiceflow/slate-serializer": "1.4.2",
+    "aws-sdk": "^2.1502.0",
+    "axios": "^1.6.2",
     "nanoevents": "8.0.0",
     "react": "18.2.0",
     "react-calendar": "4.3.0",

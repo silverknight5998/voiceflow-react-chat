@@ -15,16 +15,14 @@ import { useLiveAgent } from './use-live-agent.hook';
 
 const IMAGE = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 const AVATAR = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
-//@ts-ignore
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
 
 export const Demo: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [recording, setRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const { runtime } = useContext(RuntimeContext)!;
-
+  const [recording, setRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const liveAgent = useLiveAgent();
 
   const handleLaunch = async () => {
@@ -46,47 +44,39 @@ export const Demo: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (recording) {
-      recognition.start();
-      recognition.onend = () => {
-        console.log('...continue listening...');
-        recognition.start();
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mediaRecorder = new MediaRecorder(stream);
+    setMediaRecorder(mediaRecorder);
+
+    mediaRecorder.ondataavailable = (event) => {
+      setAudioChunks((prevAudioChunks) => [...prevAudioChunks, event.data]);
+    };
+
+    mediaRecorder.start();
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks);
+        console.log(audioBlob);
+        const formData = new FormData();
+        formData.append('file', new File([audioBlob], 'audio.wav', { type: audioBlob.type }));
+        const response = await fetch('localhost:4000/upload', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+          },
+          body: formData,
+        });
+        console.log('response', response);
+        setAudioChunks([]);
       };
-    } else {
-      recognition.stop();
-      recognition.onend = () => {
-        console.log('Stopped listening per click');
-      };
-      runtime.reply(transcript);
     }
-    recognition.onstart = () => {
-      console.log('Listening!');
-    };
-
-    let finalTranscript = '';
-    recognition.onresult = (event) => {
-      let interimTranscript = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) finalTranscript += transcript + ' ';
-        else interimTranscript += transcript;
-      }
-      console.log(finalTranscript, interimTranscript);
-      setTranscript(finalTranscript);
-    };
-
-    recognition.onerror = (event) => {
-      console.log('Error occurred in recognition: ' + event.error);
-    };
-  }, [recording]);
-
-  function formatTime(seconds: number) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-  }
+  };
 
   if (!open) {
     return (
@@ -150,6 +140,7 @@ export const Demo: React.FC = () => {
                 <Button
                   onClick={() => {
                     setRecording(true);
+                    startRecording();
                   }}
                   style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px' }}
                 >
@@ -159,6 +150,7 @@ export const Demo: React.FC = () => {
                 <Button
                   onClick={() => {
                     setRecording(false);
+                    stopRecording();
                   }}
                   style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px', backgroundColor: 'red', marginRight: '5px' }}
                 >
