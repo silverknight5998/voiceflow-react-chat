@@ -12,9 +12,18 @@ import { CalendarMessage } from './messages/CalendarMessage.component';
 import { VideoMessage } from './messages/VideoMessage.component';
 import { DemoContainer } from './styled';
 import { useLiveAgent } from './use-live-agent.hook';
+const AWS = require('aws-sdk');
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
+const s3 = new AWS.S3();
 
 const IMAGE = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 const AVATAR = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
+//@ts-ignore
 
 export const Demo: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -49,11 +58,12 @@ export const Demo: React.FC = () => {
     const mediaRecorder = new MediaRecorder(stream);
     setMediaRecorder(mediaRecorder);
 
+    mediaRecorder.start();
+
     mediaRecorder.ondataavailable = (event) => {
+      console.log('data', event.data);
       setAudioChunks((prevAudioChunks) => [...prevAudioChunks, event.data]);
     };
-
-    mediaRecorder.start();
   };
 
   const stopRecording = () => {
@@ -62,17 +72,29 @@ export const Demo: React.FC = () => {
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks);
+        console.log(audioBlob, audioBlob.type);
         const formData = new FormData();
         formData.append('file', new File([audioBlob], 'audio.wav', { type: audioBlob.type }));
-        console.log(formData);
-        const response = await fetch('localhost:4000/upload', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-          },
-          body: formData,
+        // const params = {
+        //   ACL: 'public-read',
+        //   Body: fs.createReadStream(req.file.path),
+        //   Bucket: 'your-bucket-name',
+        //   Key: req.file.originalname,
+        // };
+        const params = {
+          Bucket: 'large-file-multidownload', // replace with your bucket name
+          Key: 'audio.wav', // replace with the desired object key
+          Body: audioBlob,
+          ACL: 'public-read', // if you want the file to be publicly readable
+          ContentType: 'audio/wav', // replace with the correct MIME type
+        };
+        s3.upload(params, function (err: any, data: any) {
+          if (err) {
+            console.log(err, err.stack);
+          } else {
+            console.log('uploaddata', data);
+          }
         });
-        console.log('response', response);
         setAudioChunks([]);
       };
     }
