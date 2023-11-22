@@ -16,8 +16,8 @@ import { useLiveAgent } from './use-live-agent.hook';
 const IMAGE = 'https://picsum.photos/seed/1/200/300';
 const AVATAR = 'https://picsum.photos/seed/1/80/80';
 //@ts-ignore
-// const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-// const recognition = new SpeechRecognition();
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
 
 export const Demo: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -47,14 +47,14 @@ export const Demo: React.FC = () => {
   };
 
   useEffect(() => {
-    // recognition.onstart = () => {
-    //   console.log('Voice activated');
-    // };
-    // recognition.onresult = (event) => {
-    //   const resultIndex = event.resultIndex;
-    //   const transcript = event.results[resultIndex][0].transcript;
-    //   setTranscript(transcript);
-    // };
+    recognition.onstart = () => {
+      console.log('Voice activated');
+    };
+    recognition.onresult = (event) => {
+      const resultIndex = event.resultIndex;
+      const transcript = event.results[resultIndex][0].transcript;
+      setTranscript(transcript);
+    };
   }, [recording]);
 
   function formatTime(seconds: number) {
@@ -125,7 +125,7 @@ export const Demo: React.FC = () => {
                 <Button
                   onClick={() => {
                     setRecording(true);
-                    // recognition.start();
+                    recognition.start();
                   }}
                   style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px' }}
                 >
@@ -135,8 +135,8 @@ export const Demo: React.FC = () => {
                 <Button
                   onClick={() => {
                     setRecording(false);
-                    // recognition.stop();
-                    runtime.reply('How are you?');
+                    recognition.stop();
+                    runtime.reply(transcript);
                   }}
                   style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px', backgroundColor: 'red', marginRight: '5px' }}
                 >
