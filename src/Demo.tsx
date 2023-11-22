@@ -13,8 +13,8 @@ import { VideoMessage } from './messages/VideoMessage.component';
 import { DemoContainer } from './styled';
 import { useLiveAgent } from './use-live-agent.hook';
 
-const IMAGE = 'https://picsum.photos/seed/1/200/300';
-const AVATAR = 'https://picsum.photos/seed/1/80/80';
+const IMAGE = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
+const AVATAR = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 //@ts-ignore
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = new SpeechRecognition();
@@ -47,13 +47,38 @@ export const Demo: React.FC = () => {
   };
 
   useEffect(() => {
+    if (recording) {
+      recognition.start();
+      recognition.onend = () => {
+        console.log('...continue listening...');
+        recognition.start();
+      };
+    } else {
+      recognition.stop();
+      recognition.onend = () => {
+        console.log('Stopped listening per click');
+      };
+      runtime.reply(transcript);
+    }
     recognition.onstart = () => {
-      console.log('Voice activated');
+      console.log('Listening!');
     };
+
+    let finalTranscript = '';
     recognition.onresult = (event) => {
-      const resultIndex = event.resultIndex;
-      const transcript = event.results[resultIndex][0].transcript;
-      setTranscript(transcript);
+      let interimTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalTranscript += transcript + ' ';
+        else interimTranscript += transcript;
+      }
+      console.log(finalTranscript, interimTranscript);
+      setTranscript(finalTranscript);
+    };
+
+    recognition.onerror = (event) => {
+      console.log('Error occurred in recognition: ' + event.error);
     };
   }, [recording]);
 
@@ -125,7 +150,6 @@ export const Demo: React.FC = () => {
                 <Button
                   onClick={() => {
                     setRecording(true);
-                    recognition.start();
                   }}
                   style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px' }}
                 >
@@ -135,8 +159,6 @@ export const Demo: React.FC = () => {
                 <Button
                   onClick={() => {
                     setRecording(false);
-                    recognition.stop();
-                    runtime.reply(transcript);
                   }}
                   style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px', backgroundColor: 'red', marginRight: '5px' }}
                 >
