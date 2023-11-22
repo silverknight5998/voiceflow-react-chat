@@ -15,17 +15,16 @@ import { useLiveAgent } from './use-live-agent.hook';
 
 const IMAGE = 'https://picsum.photos/seed/1/200/300';
 const AVATAR = 'https://picsum.photos/seed/1/80/80';
+//@ts-ignore
+// const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+// const recognition = new SpeechRecognition();
 
 export const Demo: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [recording, setRecording] = useState(false);
-  const [save, setSave] = useState(0);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [audioURL, setAudioURL] = useState<string>('');
-  const [recordingTime, setRecordingTime] = useState(0);
+  const [transcript, setTranscript] = useState('');
   const { runtime } = useContext(RuntimeContext)!;
-  console.log('****audioURL', audioURL);
-  console.log('****save', save);
+
   const liveAgent = useLiveAgent();
 
   const handleLaunch = async () => {
@@ -39,6 +38,7 @@ export const Demo: React.FC = () => {
   };
 
   const handleSend = (message: string) => {
+    console.log(runtime);
     if (liveAgent.isEnabled) {
       liveAgent.sendUserReply(message);
     } else {
@@ -47,62 +47,14 @@ export const Demo: React.FC = () => {
   };
 
   useEffect(() => {
-    let stream: MediaStream | null = null;
-    let timerId: NodeJS.Timeout | null = null;
-    if ('MediaRecorder' in window) {
-      if (recording) {
-        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-          navigator.mediaDevices
-            .getUserMedia({ audio: true })
-            .then((stream) => {
-              setMediaRecorder(new MediaRecorder(stream));
-              setAudioURL('');
-              setRecordingTime(0);
-              timerId = setInterval(() => {
-                setRecordingTime((time) => time + 1);
-              }, 1000);
-            })
-            .catch((error) => {
-              console.error('Error accessing microphone:', error);
-              setSave(0);
-            });
-        } else {
-          setSave(0);
-          console.log('Browser does not support MediaDevices.getUserMedia');
-        }
-      } else {
-        if (mediaRecorder) {
-          mediaRecorder.stop();
-          mediaRecorder.ondataavailable = (e) => {
-            const audioBlob = new Blob([e.data], { type: 'audio/webm' });
-            const url = URL.createObjectURL(audioBlob);
-            setAudioURL(url);
-          };
-        }
-
-        if (stream) {
-          //@ts-ignore
-          stream.getTracks().forEach((track) => track.stop());
-        }
-
-        if (timerId) {
-          clearInterval(timerId);
-        }
-      }
-
-      return () => {
-        if (stream) {
-          stream.getTracks().forEach((track) => track.stop());
-        }
-
-        if (timerId) {
-          clearInterval(timerId);
-        }
-      };
-    } else {
-      // Fallback for browsers that don't support MediaRecorder
-      console.log('MediaRecorder is not supported in this browser.');
-    }
+    // recognition.onstart = () => {
+    //   console.log('Voice activated');
+    // };
+    // recognition.onresult = (event) => {
+    //   const resultIndex = event.resultIndex;
+    //   const transcript = event.results[resultIndex][0].transcript;
+    //   setTranscript(transcript);
+    // };
   }, [recording]);
 
   function formatTime(seconds: number) {
@@ -124,7 +76,7 @@ export const Demo: React.FC = () => {
       </span>
     );
   }
-
+  console.log('tran', transcript);
   return (
     <DemoContainer>
       <ChatWindow.Container>
@@ -168,53 +120,28 @@ export const Demo: React.FC = () => {
                 .exhaustive()
             )}
             {runtime.indicator && <SystemResponse.Indicator avatar={AVATAR} />}
-            <div style={{ marginTop: '10px' }}>
-              {save === 0 ? (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <Button
-                    onClick={() => {
-                      setRecording(true);
-                      setSave(2);
-                    }}
-                    style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px' }}
-                  >
-                    Record
-                  </Button>
-                </div>
-              ) : save === 2 ? (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <Button
-                    onClick={() => {
-                      setRecording(false);
-                      setSave(1);
-                    }}
-                    style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px', backgroundColor: 'red', marginRight: '5px' }}
-                  >
-                    Stop
-                  </Button>
-                  <p>{formatTime(recordingTime)}</p>
-                </div>
+            <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center' }}>
+              {!recording ? (
+                <Button
+                  onClick={() => {
+                    setRecording(true);
+                    // recognition.start();
+                  }}
+                  style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px' }}
+                >
+                  Record
+                </Button>
               ) : (
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Button
-                    onClick={() => setSave(0)}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      marginLeft: '15px',
-                      color: '#3d82e2',
-                      backgroundColor: 'white',
-                      border: '1px solid #3d82e2',
-                      borderRadius: '25px',
-                      fontSize: '12px',
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={() => setSave(0)} style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px' }}>
-                    Save
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => {
+                    setRecording(false);
+                    // recognition.stop();
+                    runtime.reply('How are you?');
+                  }}
+                  style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px', backgroundColor: 'red', marginRight: '5px' }}
+                >
+                  Stop
+                </Button>
               )}
             </div>
           </Chat>

@@ -62,6 +62,7 @@ export const useLiveAgent = () => {
   };
 
   const subscribeToConversation = (platform: LiveAgentPlatform, userID: string, conversationID: string) => {
+    console.log('sdsdssdsds');
     socketRef.current = new WebSocket(`ws://localhost:9099/${platform}/user/${userID}/conversation/${conversationID}/socket`);
     socketRef.current.onmessage = (message) => {
       const event = JSON.parse(message.data);
@@ -116,10 +117,13 @@ export const useLiveAgent = () => {
     },
     [runtime]
   );
-
   useEffect(() => () => clearTimeout(timeoutRef.current), []);
 
-  useEffect(() => subscribe('live_agent', talkToAgent), [talkToAgent]);
+  useEffect(() => {
+    console.log('live_agent');
+    console.log(import.meta.env.VF_DM_API_KEY);
+    subscribe('live_agent', talkToAgent);
+  }, [talkToAgent]);
 
   return {
     isEnabled,
