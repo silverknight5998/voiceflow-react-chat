@@ -49,55 +49,60 @@ export const Demo: React.FC = () => {
   useEffect(() => {
     let stream: MediaStream | null = null;
     let timerId: NodeJS.Timeout | null = null;
-
-    if (recording) {
-      if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-        navigator.mediaDevices
-          .getUserMedia({ audio: true })
-          .then((stream) => {
-            setMediaRecorder(new MediaRecorder(stream));
-            setAudioURL('');
-            setRecordingTime(0);
-            timerId = setInterval(() => {
-              setRecordingTime((time) => time + 1);
-            }, 1000);
-          })
-          .catch((error) => {
-            console.error('Error accessing microphone:', error);
-            setSave(0);
-          });
+    if ('MediaRecorder' in window) {
+      if (recording) {
+        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+          navigator.mediaDevices
+            .getUserMedia({ audio: true })
+            .then((stream) => {
+              setMediaRecorder(new MediaRecorder(stream));
+              setAudioURL('');
+              setRecordingTime(0);
+              timerId = setInterval(() => {
+                setRecordingTime((time) => time + 1);
+              }, 1000);
+            })
+            .catch((error) => {
+              console.error('Error accessing microphone:', error);
+              setSave(0);
+            });
+        } else {
+          setSave(0);
+          console.log('Browser does not support MediaDevices.getUserMedia');
+        }
       } else {
-        setSave(0);
-        console.log('Browser does not support MediaDevices.getUserMedia');
+        if (mediaRecorder) {
+          mediaRecorder.stop();
+          mediaRecorder.ondataavailable = (e) => {
+            const audioBlob = new Blob([e.data], { type: 'audio/webm' });
+            const url = URL.createObjectURL(audioBlob);
+            setAudioURL(url);
+          };
+        }
+
+        if (stream) {
+          //@ts-ignore
+          stream.getTracks().forEach((track) => track.stop());
+        }
+
+        if (timerId) {
+          clearInterval(timerId);
+        }
       }
+
+      return () => {
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+        }
+
+        if (timerId) {
+          clearInterval(timerId);
+        }
+      };
     } else {
-      if (mediaRecorder) {
-        mediaRecorder.stop();
-        mediaRecorder.ondataavailable = (e) => {
-          const audioBlob = new Blob([e.data], { type: 'audio/webm' });
-          const url = URL.createObjectURL(audioBlob);
-          setAudioURL(url);
-        };
-      }
-
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-
-      if (timerId) {
-        clearInterval(timerId);
-      }
+      // Fallback for browsers that don't support MediaRecorder
+      console.log('MediaRecorder is not supported in this browser.');
     }
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-
-      if (timerId) {
-        clearInterval(timerId);
-      }
-    };
   }, [recording]);
 
   function formatTime(seconds: number) {
