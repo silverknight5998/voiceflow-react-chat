@@ -1,7 +1,7 @@
 import 'react-calendar/dist/Calendar.css';
 import './app.css';
 import { Chat, ChatWindow, Launcher, RuntimeAPIProvider, SessionStatus, SystemResponse, TurnType, UserResponse, Button } from '@voiceflow/react-chat';
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState } from 'react';
 import { match } from 'ts-pattern';
 import axios from 'axios';
 import { LiveAgentStatus } from './components/LiveAgentStatus.component';
@@ -19,7 +19,6 @@ const AVATAR = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 
 export const Demo: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [transcript, setTranscript] = useState('');
   const { runtime } = useContext(RuntimeContext)!;
   const [isActive, setIsActive] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -44,7 +43,6 @@ export const Demo: React.FC = () => {
   };
 
   const startRecording = async () => {
-    console.log('sdssdsd');
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.start();
