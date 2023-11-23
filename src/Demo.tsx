@@ -60,7 +60,7 @@ export const Demo: React.FC = () => {
     processor.connect(audioContext.destination);
 
     let silenceStart = Date.now();
-    const silenceDuration = 1; // 2 seconds
+    const silenceDuration = 2; // 2 seconds
 
     processor.onaudioprocess = function (event) {
       const inputBuffer = event.inputBuffer.getChannelData(0);
