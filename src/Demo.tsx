@@ -54,41 +54,47 @@ export const Demo: React.FC = () => {
       chunks.push(event.data);
     });
 
-    let silenceTimeout: NodeJS.Timeout;
-
     const audioContext = new AudioContext();
     const source = audioContext.createMediaStreamSource(stream);
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 1024;
-    source.connect(analyser);
+    const processor = audioContext.createScriptProcessor(1024, 1, 1);
 
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+    source.connect(processor);
+    processor.connect(audioContext.destination);
 
-    const checkSilence = () => {
-      analyser.getByteFrequencyData(dataArray);
-      const sum = dataArray.reduce((a, b) => a + b);
-      const avg = sum / bufferLength;
+    let silenceStart = Date.now();
+    const silenceDuration = 2; // 2 seconds
 
-      if (avg < 5) {
-        // adjust this value to detect silence, it may not be perfect for all types of microphones
-        if (mediaRecorder.state === 'recording') {
-          silenceTimeout = setTimeout(() => {
-            mediaRecorder.stop();
-            setRecording(false);
-            audioContext.close();
-          }, 2000);
-        }
-      } else {
-        clearTimeout(silenceTimeout);
-      }
-
-      if (mediaRecorder.state === 'recording') {
-        requestAnimationFrame(checkSilence);
-      }
+    processor.onaudioprocess = function (event) {
+      const inputBuffer = event.inputBuffer.getChannelData(0);
+      checkForSilence(inputBuffer);
     };
 
-    checkSilence();
+    function checkForSilence(inputBuffer: any) {
+      const isSilent = isBufferSilent(inputBuffer);
+      if (isSilent) {
+        if (Date.now() - silenceStart > silenceDuration * 1000) {
+          if (mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            setRecording(false);
+            processor.disconnect();
+            source.disconnect();
+            audioContext.close();
+          }
+        }
+      } else {
+        silenceStart = Date.now();
+      }
+    }
+
+    function isBufferSilent(buffer: any) {
+      const threshold = 0.02;
+      for (let i = 0; i < buffer.length; i++) {
+        if (Math.abs(buffer[i]) > threshold) {
+          return false;
+        }
+      }
+      return true;
+    }
 
     mediaRecorder.onstop = async () => {
       const formData = new FormData();
