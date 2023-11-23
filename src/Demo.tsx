@@ -3,7 +3,7 @@ import 'react-calendar/dist/Calendar.css';
 import { Chat, ChatWindow, Launcher, RuntimeAPIProvider, SessionStatus, SystemResponse, TurnType, UserResponse, Button } from '@voiceflow/react-chat';
 import { useContext, useState, useEffect } from 'react';
 import { match } from 'ts-pattern';
-
+import axios from 'axios';
 import { LiveAgentStatus } from './components/LiveAgentStatus.component';
 import { StreamedMessage } from './components/StreamedMessage.component';
 import { RuntimeContext } from './context';
@@ -23,7 +23,7 @@ export const Demo: React.FC = () => {
   const { runtime } = useContext(RuntimeContext)!;
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+  const [audioChunks, setAudioChunks] = useState<Blob>(new Blob());
   const liveAgent = useLiveAgent();
 
   const handleLaunch = async () => {
@@ -53,7 +53,7 @@ export const Demo: React.FC = () => {
 
     mediaRecorder.ondataavailable = (event) => {
       console.log('data', event.data);
-      setAudioChunks([...audioChunks, event.data]);
+      setAudioChunks(event.data);
     };
   };
 
@@ -63,19 +63,22 @@ export const Demo: React.FC = () => {
 
       mediaRecorder.onstop = async () => {
         console.log('audioCHunks', audioChunks);
-        const audioBlob = new Blob(audioChunks);
-        console.log(audioBlob, audioBlob.type);
+        // const audioBlob = new Blob(audioChunks);
+        // console.log(audioBlob, audioBlob.type);
         const formData = new FormData();
-        formData.append('file', new File([audioBlob], 'audio.wav', { type: audioBlob.type }));
+        formData.append('file', new File([audioChunks], 'audio.wav', { type: audioChunks.type }));
         console.log('formData', formData);
-        const response = await fetch('localhost:4000/upload', {
-          method: 'POST',
+        const response = await axios.post('http://54.177.103.247:5000/api/upload', formData, {
           headers: {
-            Accept: 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
-          body: formData,
         });
-        console.log('response', response);
+
+        const transcript = await axios.post('http://54.177.103.247:5000/api/transcribe', {
+          audioUrl: response.data.fileUrl,
+        });
+
+        console.log(transcript.data);
         setAudioChunks([]);
       };
     }
