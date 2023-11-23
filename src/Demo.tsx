@@ -74,22 +74,8 @@ export const Demo: React.FC = () => {
           if (mediaRecorder.state === 'recording') {
             processor.disconnect();
             source.disconnect();
-            audioContext.close();
-            if ($('#recButton').hasClass('notRec')) {
-              $('#recButton').removeClass('notRec');
-              $('#recButton').addClass('Rec');
-            } else {
-              $('#recButton').removeClass('Rec');
-              $('#recButton').addClass('notRec');
-            }
-          } else {
-            if ($('#recButton').hasClass('notRec')) {
-              $('#recButton').removeClass('notRec');
-              $('#recButton').addClass('Rec');
-            } else {
-              $('#recButton').removeClass('Rec');
-              $('#recButton').addClass('notRec');
-            }
+            mediaRecorder.stop();
+            setIsActive(false);
           }
         }
       } else {
