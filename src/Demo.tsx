@@ -1,7 +1,7 @@
 import 'react-calendar/dist/Calendar.css';
-
+import './app.css';
 import { Chat, ChatWindow, Launcher, RuntimeAPIProvider, SessionStatus, SystemResponse, TurnType, UserResponse, Button } from '@voiceflow/react-chat';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { match } from 'ts-pattern';
 import axios from 'axios';
 import { LiveAgentStatus } from './components/LiveAgentStatus.component';
@@ -12,14 +12,13 @@ import { CalendarMessage } from './messages/CalendarMessage.component';
 import { VideoMessage } from './messages/VideoMessage.component';
 import { DemoContainer } from './styled';
 import { useLiveAgent } from './use-live-agent.hook';
-
+//@ts-ignore
+import $ from 'jquery';
 const IMAGE = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 const AVATAR = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
-//@ts-ignore
 
 export const Demo: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [transcript, setTranscript] = useState('');
   const { runtime } = useContext(RuntimeContext)!;
   const [isActive, setIsActive] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -44,7 +43,6 @@ export const Demo: React.FC = () => {
   };
 
   const startRecording = async () => {
-    console.log('sdssdsd');
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.start();
@@ -196,8 +194,10 @@ export const Demo: React.FC = () => {
                       background: '#262b2a',
                       position: 'absolute',
                       display: 'flex',
+                      marginLeft: '0%',
+                      transition: 'ease-in',
                     }
-                  : { display: 'none' }
+                  : { display: 'none', marginLeft: '-100%' }
               }
             >
               <div
@@ -260,8 +260,20 @@ export const Demo: React.FC = () => {
                   </svg>
                 </Button>
                 <Button
+                  id="recButton"
                   onClick={() => {
                     startRecording();
+                    $('#recButton').addClass('notRec');
+
+                    $('#recButton').click(function () {
+                      if ($('#recButton').hasClass('notRec')) {
+                        $('#recButton').removeClass('notRec');
+                        $('#recButton').addClass('Rec');
+                      } else {
+                        $('#recButton').removeClass('Rec');
+                        $('#recButton').addClass('notRec');
+                      }
+                    });
                   }}
                   style={{ width: '60px', height: '60px', borderRadius: '30px', fontSize: '12px', background: '#19d473' }}
                 >
