@@ -1,6 +1,6 @@
 import 'react-calendar/dist/Calendar.css';
-
-import { Chat, ChatWindow, Launcher, RuntimeAPIProvider, SessionStatus, SystemResponse, TurnType, UserResponse, Button } from '@voiceflow/react-chat';
+import Button from '@mui/material/Button';
+import { Chat, ChatWindow, Launcher, RuntimeAPIProvider, SessionStatus, SystemResponse, TurnType, UserResponse } from '@voiceflow/react-chat';
 import { useContext, useState } from 'react';
 import { match } from 'ts-pattern';
 import axios from 'axios';
@@ -12,6 +12,9 @@ import { CalendarMessage } from './messages/CalendarMessage.component';
 import { VideoMessage } from './messages/VideoMessage.component';
 import { DemoContainer } from './styled';
 import { useLiveAgent } from './use-live-agent.hook';
+
+import CallIcon from '@mui/icons-material/Call';
+import CallEndIcon from '@mui/icons-material/CallEnd';
 
 const IMAGE = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 const AVATAR = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
@@ -143,26 +146,31 @@ export const Demo: React.FC = () => {
                 .exhaustive()
             )}
             {runtime.indicator && <SystemResponse.Indicator avatar={AVATAR} />}
-            <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center' }}>
-              {!recording ? (
-                <Button
-                  onClick={() => {
-                    startRecording();
-                  }}
-                  style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px' }}
-                >
-                  Record
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => {
-                    stopRecording();
-                  }}
-                  style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px', backgroundColor: 'red', marginRight: '5px' }}
-                >
-                  Stop
-                </Button>
-              )}
+            <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
+              <Button
+                onClick={() => {
+                  startRecording();
+                }}
+                style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px', marginLeft: '15px', background: '#fc2403' }}
+              >
+                <CallIcon />
+              </Button>
+              <Button
+                onClick={() => {
+                  stopRecording();
+                }}
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '25px',
+                  fontSize: '12px',
+                  backgroundColor: 'red',
+                  marginRight: '5px',
+                  background: '#03fcc2',
+                }}
+              >
+                <CallEndIcon />
+              </Button>
             </div>
           </Chat>
         </RuntimeAPIProvider>

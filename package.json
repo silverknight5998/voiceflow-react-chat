@@ -9,6 +9,8 @@
   },
   "prettier": "@voiceflow/prettier-config",
   "dependencies": {
+    "@mui/icons-material": "^5.14.18",
+    "@mui/material": "^5.14.18",
     "@voiceflow/exception": "1.4.0",
     "@voiceflow/fetch": "1.5.2",
     "@voiceflow/react-chat": "1.46.1",
