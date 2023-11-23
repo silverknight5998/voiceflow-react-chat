@@ -19,6 +19,7 @@ const AVATAR = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 
 export const Demo: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const [transcript, setTranscript] = useState('');
   const { runtime } = useContext(RuntimeContext)!;
   const [isActive, setIsActive] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -43,6 +44,7 @@ export const Demo: React.FC = () => {
   };
 
   const startRecording = async () => {
+    console.log('sdssdsd');
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.start();
@@ -60,7 +62,7 @@ export const Demo: React.FC = () => {
     processor.connect(audioContext.destination);
 
     let silenceStart = Date.now();
-    const silenceDuration = 2; // 2 seconds
+    const silenceDuration = 1; // 2 seconds
 
     processor.onaudioprocess = function (event) {
       const inputBuffer = event.inputBuffer.getChannelData(0);
@@ -72,11 +74,17 @@ export const Demo: React.FC = () => {
       if (isSilent) {
         if (Date.now() - silenceStart > silenceDuration * 1000) {
           if (mediaRecorder.state === 'recording') {
-            mediaRecorder.stop();
             setIsActive(false);
             processor.disconnect();
             source.disconnect();
             audioContext.close();
+            if ($('#recButton').hasClass('notRec')) {
+              $('#recButton').removeClass('notRec');
+              $('#recButton').addClass('Rec');
+            } else {
+              $('#recButton').removeClass('Rec');
+              $('#recButton').addClass('notRec');
+            }
           }
         }
       } else {
@@ -236,6 +244,13 @@ export const Demo: React.FC = () => {
                 <Button
                   onClick={() => {
                     stopRecording();
+                    if ($('#recButton').hasClass('notRec')) {
+                      $('#recButton').removeClass('notRec');
+                      $('#recButton').addClass('Rec');
+                    } else {
+                      $('#recButton').removeClass('Rec');
+                      $('#recButton').addClass('notRec');
+                    }
                     setIsActive(false);
                   }}
                   style={{
@@ -261,19 +276,17 @@ export const Demo: React.FC = () => {
                 </Button>
                 <Button
                   id="recButton"
+                  className="notRec"
                   onClick={() => {
                     startRecording();
-                    $('#recButton').addClass('notRec');
 
-                    $('#recButton').click(function () {
-                      if ($('#recButton').hasClass('notRec')) {
-                        $('#recButton').removeClass('notRec');
-                        $('#recButton').addClass('Rec');
-                      } else {
-                        $('#recButton').removeClass('Rec');
-                        $('#recButton').addClass('notRec');
-                      }
-                    });
+                    if ($('#recButton').hasClass('notRec')) {
+                      $('#recButton').removeClass('notRec');
+                      $('#recButton').addClass('Rec');
+                    } else {
+                      $('#recButton').removeClass('Rec');
+                      $('#recButton').addClass('notRec');
+                    }
                   }}
                   style={{ width: '60px', height: '60px', borderRadius: '30px', fontSize: '12px', background: '#19d473' }}
                 >
