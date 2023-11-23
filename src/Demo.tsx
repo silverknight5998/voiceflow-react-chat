@@ -1,7 +1,7 @@
 import 'react-calendar/dist/Calendar.css';
 
 import { Chat, ChatWindow, Launcher, RuntimeAPIProvider, SessionStatus, SystemResponse, TurnType, UserResponse, Button } from '@voiceflow/react-chat';
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState } from 'react';
 import { match } from 'ts-pattern';
 import axios from 'axios';
 import { LiveAgentStatus } from './components/LiveAgentStatus.component';
@@ -15,15 +15,12 @@ import { useLiveAgent } from './use-live-agent.hook';
 
 const IMAGE = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 const AVATAR = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
-//@ts-ignore
 
 export const Demo: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [transcript, setTranscript] = useState('');
   const { runtime } = useContext(RuntimeContext)!;
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [audioChunks, setAudioChunks] = useState<Blob>(new Blob());
   const liveAgent = useLiveAgent();
 
   const handleLaunch = async () => {
@@ -45,42 +42,48 @@ export const Demo: React.FC = () => {
   };
 
   const startRecording = async () => {
+    setRecording(true);
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
-    setMediaRecorder(mediaRecorder);
-
     mediaRecorder.start();
 
-    mediaRecorder.ondataavailable = (event) => {
-      console.log('data', event.data);
-      setAudioChunks(event.data);
+    const chunks: any = [];
+    mediaRecorder.addEventListener('dataavailable', (event) => {
+      chunks.push(event.data);
+    });
+
+    mediaRecorder.onstop = async () => {
+      const formData = new FormData();
+      const audioBlob = new Blob(chunks);
+      formData.append('file', audioBlob, 'audio.wav');
+      const response = await axios.post('https://api.tradies-success-academy.com/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const transcripts = await axios.post(
+        'https://api.tradies-success-academy.com/api/transcribe',
+        {
+          filename: response.data,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      runtime.reply(transcripts.data);
     };
+
+    setRecording(true);
+    setMediaRecorder(mediaRecorder);
   };
 
   const stopRecording = () => {
     if (mediaRecorder) {
+      setRecording(false);
       mediaRecorder.stop();
-
-      mediaRecorder.onstop = async () => {
-        console.log('audioCHunks', audioChunks);
-        // const audioBlob = new Blob(audioChunks);
-        // console.log(audioBlob, audioBlob.type);
-        const formData = new FormData();
-        formData.append('file', new File([audioChunks], 'audio.wav', { type: audioChunks.type }));
-        console.log('formData', formData);
-        const response = await axios.post('http://54.177.103.247:5000/api/upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-
-        const transcript = await axios.post('http://54.177.103.247:5000/api/transcribe', {
-          audioUrl: response.data.fileUrl,
-        });
-
-        console.log(transcript.data);
-        setAudioChunks([]);
-      };
     }
   };
 
@@ -97,7 +100,6 @@ export const Demo: React.FC = () => {
       </span>
     );
   }
-  console.log('tran', transcript);
   return (
     <DemoContainer>
       <ChatWindow.Container>
@@ -145,7 +147,6 @@ export const Demo: React.FC = () => {
               {!recording ? (
                 <Button
                   onClick={() => {
-                    setRecording(true);
                     startRecording();
                   }}
                   style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px' }}
@@ -155,7 +156,6 @@ export const Demo: React.FC = () => {
               ) : (
                 <Button
                   onClick={() => {
-                    setRecording(false);
                     stopRecording();
                   }}
                   style={{ width: '50px', height: '50px', borderRadius: '25px', fontSize: '12px', backgroundColor: 'red', marginRight: '5px' }}
