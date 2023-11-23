@@ -72,7 +72,6 @@ export const Demo: React.FC = () => {
       if (isSilent) {
         if (Date.now() - silenceStart > silenceDuration * 1000) {
           if (mediaRecorder.state === 'recording') {
-            setIsActive(false);
             processor.disconnect();
             source.disconnect();
             audioContext.close();
