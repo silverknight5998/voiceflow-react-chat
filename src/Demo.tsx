@@ -82,6 +82,14 @@ export const Demo: React.FC = () => {
               $('#recButton').removeClass('Rec');
               $('#recButton').addClass('notRec');
             }
+          } else {
+            if ($('#recButton').hasClass('notRec')) {
+              $('#recButton').removeClass('notRec');
+              $('#recButton').addClass('Rec');
+            } else {
+              $('#recButton').removeClass('Rec');
+              $('#recButton').addClass('notRec');
+            }
           }
         }
       } else {
