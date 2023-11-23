@@ -27,8 +27,6 @@ export const Demo: React.FC = () => {
   const handleLaunch = async () => {
     setOpen(true);
     await runtime.launch();
-    startRecording();
-    setIsActive(true);
   };
 
   const handleEnd = () => {
