@@ -108,7 +108,6 @@ export const Demo: React.FC = () => {
       const inputBuffer = event.inputBuffer.getChannelData(0);
       checkForSilence(inputBuffer);
     };
-
     function checkForSilence(inputBuffer: any) {
       const isSilent = isBufferSilent(inputBuffer);
       if (isSilent) {
@@ -125,6 +124,9 @@ export const Demo: React.FC = () => {
         }
       } else {
         silenceStart = Date.now();
+        // if(mediaRecorder.state === 'inactive') {
+        //   startRecording();
+        // }
       }
     }
 
@@ -139,10 +141,10 @@ export const Demo: React.FC = () => {
     }
 
     mediaRecorder.onstop = async () => {
-      console.log('stop');
       const formData = new FormData();
       const audioBlob = new Blob(chunks);
-      formData.append('file', audioBlob, 'audio.wav');
+      formData.append('file', audioBlob, `${runtime.session.userID}.wav`);
+      formData.append('name', runtime.session.userID);
       const response = await axios.post('https://api.tradies-success-academy.com/api/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -152,7 +154,7 @@ export const Demo: React.FC = () => {
       const transcripts = await axios.post(
         'https://api.tradies-success-academy.com/api/transcribe',
         {
-          filename: response.data,
+          filename: `${runtime.session.userID}.wav`,
         },
         {
           headers: {
@@ -216,7 +218,6 @@ export const Demo: React.FC = () => {
                     {...rest}
                     key={id}
                     Message={({ message, ...props }) => {
-                      // console.log(message);
                       return match(message)
                         .with({ type: CustomMessage.CALENDAR }, ({ payload: { today } }) => (
                           <CalendarMessage {...props} value={new Date(today)} runtime={runtime} />
