@@ -57,9 +57,11 @@ export const Demo: React.FC = () => {
       let url = URL.createObjectURL(blob);
       let audio = new Audio(url);
       audio.play();
-      startRecording();
-      $('#recButton').removeClass('notRec');
-      $('#recButton').addClass('Rec');
+      if (isActive) {
+        startRecording();
+        $('#recButton').removeClass('notRec');
+        $('#recButton').addClass('Rec');
+      }
     };
     if (message) audioPlay();
   }, [message]);
