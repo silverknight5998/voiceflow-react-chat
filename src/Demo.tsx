@@ -75,7 +75,9 @@ export const Demo: React.FC = () => {
             processor.disconnect();
             source.disconnect();
             mediaRecorder.stop();
-            setIsActive(false);
+            $('#recButton').removeClass('Rec');
+            $('#recButton').addClass('notRec');
+            // setIsActive(false);
           }
         }
       } else {
@@ -116,6 +118,9 @@ export const Demo: React.FC = () => {
         }
       );
       runtime.reply(transcripts.data);
+      startRecording();
+      $('#recButton').removeClass('notRec');
+      $('#recButton').addClass('Rec');
     };
 
     setMediaRecorder(mediaRecorder);
@@ -218,18 +223,7 @@ export const Demo: React.FC = () => {
                     background: '#9fa3ab',
                   }}
                 >
-                  <svg width="177px" height="177px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g id="SVGRepo_iconCarrier">
-                      {' '}
-                      <circle cx="12" cy="6" r="4" fill="#7d7d87"></circle>{' '}
-                      <path
-                        d="M20 17.5C20 19.9853 20 22 12 22C4 22 4 19.9853 4 17.5C4 15.0147 7.58172 13 12 13C16.4183 13 20 15.0147 20 17.5Z"
-                        fill="#7d7d87"
-                      ></path>{' '}
-                    </g>
-                  </svg>
+                  <img style={{ width: '200px', height: '200px', borderRadius: '100px', background: '#9fa3ab' }} src="/src/assets/user.png" />
                 </Button>
               </div>
               <div style={{ width: '100%', marginBottom: '50%', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end' }}>
@@ -252,15 +246,7 @@ export const Demo: React.FC = () => {
                   setIsActive(true);
                 }}
               >
-                <svg fill="#ffffff" viewBox="-9.5 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                  <g id="SVGRepo_iconCarrier">
-                    {' '}
-                    <title>record</title>{' '}
-                    <path d="M2.656 11.25v-2.969c0-1.906 1.719-3.5 3.906-3.5 2.156 0 3.906 1.594 3.906 3.5v2.969h-7.813zM13.188 11.438v5.969c-1.281 3.5-5.063 4.031-5.063 4.031v3.969h4.156v1.781h-11.438v-1.781h4.188v-3.969s-3.75-0.531-5.031-4.031v-5.969l1.531-0.719v5.438s0.469 3.656 5.031 3.656 5.094-3.656 5.094-3.656v-5.438zM10.469 12.281v2.688c0 1.906-1.75 3.5-3.906 3.5-2.188 0-3.906-1.594-3.906-3.5v-2.688h7.813z"></path>{' '}
-                  </g>
-                </svg>
+                <img style={{ width: '60px', height: '60px' }} src="/src/assets/record.png" />
               </Button>
             </div>
           </Chat>
