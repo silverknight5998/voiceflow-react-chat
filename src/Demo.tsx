@@ -1,7 +1,7 @@
 import 'react-calendar/dist/Calendar.css';
 import './app.css';
 import { Chat, ChatWindow, Launcher, RuntimeAPIProvider, SessionStatus, SystemResponse, TurnType, UserResponse, Button } from '@voiceflow/react-chat';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect, useMemo } from 'react';
 import { match } from 'ts-pattern';
 import axios from 'axios';
 import { LiveAgentStatus } from './components/LiveAgentStatus.component';
@@ -12,6 +12,7 @@ import { CalendarMessage } from './messages/CalendarMessage.component';
 import { VideoMessage } from './messages/VideoMessage.component';
 import { DemoContainer } from './styled';
 import { useLiveAgent } from './use-live-agent.hook';
+
 //@ts-ignore
 import $ from 'jquery';
 const IMAGE = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
@@ -22,7 +23,43 @@ export const Demo: React.FC = () => {
   const { runtime } = useContext(RuntimeContext)!;
   const [isActive, setIsActive] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [text, setText] = useState('');
   const liveAgent = useLiveAgent();
+  const message = useMemo(() => {
+    return text;
+  }, [text]);
+  useEffect(() => {
+    const audioPlay = async () => {
+      const res = await axios.post(
+        'https://api.tradies-success-academy.com/api/audio',
+        {
+          transcript: message,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      let byteCharacters = atob(res.data);
+
+      // Create an array of byte numbers from the raw binary data
+      let byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+
+      // Create a Blob from the byte numbers
+      let byteArray = new Uint8Array(byteNumbers);
+      let blob = new Blob([byteArray], { type: 'audio/mp3' });
+
+      // Create a URL for the Blob and play the audio
+      let url = URL.createObjectURL(blob);
+      let audio = new Audio(url);
+      audio.play();
+    };
+    if (message) audioPlay();
+  }, [message]);
 
   const handleLaunch = async () => {
     setOpen(true);
@@ -117,8 +154,9 @@ export const Demo: React.FC = () => {
           },
         }
       );
+
       runtime.reply(transcripts.data);
-      startRecording();
+      // startRecording();
       $('#recButton').removeClass('notRec');
       $('#recButton').addClass('Rec');
     };
@@ -171,16 +209,21 @@ export const Demo: React.FC = () => {
                   <SystemResponse
                     {...rest}
                     key={id}
-                    Message={({ message, ...props }) =>
-                      match(message)
+                    Message={({ message, ...props }) => {
+                      // console.log(message);
+                      return match(message)
                         .with({ type: CustomMessage.CALENDAR }, ({ payload: { today } }) => (
                           <CalendarMessage {...props} value={new Date(today)} runtime={runtime} />
                         ))
                         .with({ type: CustomMessage.VIDEO }, ({ payload: url }) => <VideoMessage url={url} />)
                         .with({ type: CustomMessage.STREAMED_RESPONSE }, ({ payload: { getSocket } }) => <StreamedMessage getSocket={getSocket} />)
                         .with({ type: CustomMessage.PLUGIN }, ({ payload: { Message } }) => <Message />)
-                        .otherwise(() => <SystemResponse.SystemMessage {...props} message={message} />)
-                    }
+                        .otherwise(() => {
+                          //@ts-ignore
+                          setText(message.text[0].children[0].text);
+                          return <SystemResponse.SystemMessage {...props} message={message} />;
+                        });
+                    }}
                     avatar={AVATAR}
                     isLast={turnIndex === runtime.session.turns.length - 1}
                   />
