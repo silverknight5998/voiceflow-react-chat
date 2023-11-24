@@ -23,6 +23,7 @@ export const Demo: React.FC = () => {
   const { runtime } = useContext(RuntimeContext)!;
   const [isActive, setIsActive] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [resume, setResume] = useState(false);
   const [text, setText] = useState('');
   const liveAgent = useLiveAgent();
   const message = useMemo(() => {
@@ -110,6 +111,32 @@ export const Demo: React.FC = () => {
     };
     function checkForSilence(inputBuffer: any) {
       const isSilent = isBufferSilent(inputBuffer);
+      if (isSilent) {
+        if (Date.now() - silenceStart > silenceDuration * 1000) {
+          if (mediaRecorder.state === 'recording') {
+            if (resume) {
+              console.log('pause');
+              mediaRecorder.pause();
+              $('#recButton').removeClass('Rec');
+              $('#recButton').addClass('notRec');
+            } else {
+              console.log('stop');
+              processor.disconnect();
+              source.disconnect();
+              mediaRecorder.stop();
+              setResume(true);
+            }
+          }
+        }
+      } else {
+        silenceStart = Date.now();
+        if (mediaRecorder.state === 'paused') {
+          console.log('resume');
+          mediaRecorder.resume();
+          $('#recButton').removeClass('notRec');
+          $('#recButton').addClass('Rec');
+        }
+      }
       if (isSilent) {
         if (Date.now() - silenceStart > silenceDuration * 1000) {
           if (mediaRecorder.state === 'recording') {
@@ -227,8 +254,10 @@ export const Demo: React.FC = () => {
                         .with({ type: CustomMessage.PLUGIN }, ({ payload: { Message } }) => <Message />)
                         .otherwise(() => {
                           //@ts-ignore
-                          if (message.text && message.text.length && message.text[0].children && message.text[0].children.length)
+                          if (message.text && message.text.length && message.text[0].children && message.text[0].children.length) {
+                            //@ts-ignore
                             setText(message.text[0].children[0].text);
+                          }
                           return <SystemResponse.SystemMessage {...props} message={message} />;
                         });
                     }}
