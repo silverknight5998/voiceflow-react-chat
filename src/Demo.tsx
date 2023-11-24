@@ -226,7 +226,8 @@ export const Demo: React.FC = () => {
                         .with({ type: CustomMessage.PLUGIN }, ({ payload: { Message } }) => <Message />)
                         .otherwise(() => {
                           //@ts-ignore
-                          setText(message.text[0].children[0].text);
+                          if (message.text && message.text.length && message.text[0].children && message.text[0].children.length)
+                            setText(message.text[0].children[0].text);
                           return <SystemResponse.SystemMessage {...props} message={message} />;
                         });
                     }}
