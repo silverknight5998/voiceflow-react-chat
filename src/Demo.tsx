@@ -137,24 +137,6 @@ export const Demo: React.FC = () => {
           $('#recButton').addClass('Rec');
         }
       }
-      if (isSilent) {
-        if (Date.now() - silenceStart > silenceDuration * 1000) {
-          if (mediaRecorder.state === 'recording') {
-            console.log('stoped');
-            processor.disconnect();
-            source.disconnect();
-            mediaRecorder.stop();
-            $('#recButton').removeClass('Rec');
-            $('#recButton').addClass('notRec');
-            // setIsActive(false);
-          }
-        }
-      } else {
-        silenceStart = Date.now();
-        // if(mediaRecorder.state === 'inactive') {
-        //   startRecording();
-        // }
-      }
     }
 
     function isBufferSilent(buffer: any) {
