@@ -223,7 +223,7 @@ export const Demo: React.FC = () => {
                     background: '#9fa3ab',
                   }}
                 >
-                  <img style={{ width: '200px', height: '200px', borderRadius: '100px', background: '#9fa3ab' }} src="/src/assets/user.png" />
+                  <img style={{ width: '200px', height: '200px', borderRadius: '100px', background: '#9fa3ab' }} src="/assets/user.png" />
                 </Button>
               </div>
               <div style={{ width: '100%', marginBottom: '50%', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end' }}>
@@ -246,7 +246,7 @@ export const Demo: React.FC = () => {
                   setIsActive(true);
                 }}
               >
-                <img style={{ width: '60px', height: '60px' }} src="/src/assets/record.png" />
+                <img style={{ width: '60px', height: '60px' }} src="/assets/record.png" />
               </Button>
             </div>
           </Chat>
