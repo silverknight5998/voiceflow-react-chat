@@ -57,6 +57,9 @@ export const Demo: React.FC = () => {
       let url = URL.createObjectURL(blob);
       let audio = new Audio(url);
       audio.play();
+      startRecording();
+      $('#recButton').removeClass('notRec');
+      $('#recButton').addClass('Rec');
     };
     if (message) audioPlay();
   }, [message]);
@@ -109,6 +112,7 @@ export const Demo: React.FC = () => {
       if (isSilent) {
         if (Date.now() - silenceStart > silenceDuration * 1000) {
           if (mediaRecorder.state === 'recording') {
+            console.log('stoped');
             processor.disconnect();
             source.disconnect();
             mediaRecorder.stop();
@@ -119,11 +123,6 @@ export const Demo: React.FC = () => {
         }
       } else {
         silenceStart = Date.now();
-        if (mediaRecorder.state === 'inactive') {
-          startRecording();
-          $('#recButton').removeClass('notRec');
-          $('#recButton').addClass('Rec');
-        }
       }
     }
 
