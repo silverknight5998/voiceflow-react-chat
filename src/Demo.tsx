@@ -212,7 +212,7 @@ export const Demo: React.FC = () => {
       )}
       <DemoContainer
         style={{
-          padding: '4px',
+          padding: '40px',
         }}
       >
         <ChatWindow.Container
