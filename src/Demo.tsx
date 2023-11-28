@@ -29,6 +29,16 @@ export const Demo: React.FC = () => {
   const message = useMemo(() => {
     return text;
   }, [text]);
+
+  useEffect(() => {
+    async () => {
+      await runtime.launch();
+    };
+    return () => {
+      runtime.setStatus(SessionStatus.ENDED);
+    };
+  }, []);
+
   useEffect(() => {
     const audioPlay = async () => {
       const res = await axios.post(
@@ -69,11 +79,10 @@ export const Demo: React.FC = () => {
 
   const handleLaunch = async () => {
     setOpen(true);
-    await runtime.launch();
   };
 
   const handleEnd = () => {
-    runtime.setStatus(SessionStatus.ENDED);
+    // runtime.setStatus(SessionStatus.ENDED);
     setOpen(false);
   };
 
@@ -200,8 +209,21 @@ export const Demo: React.FC = () => {
       </span>
     );
   }
+
   return (
-    <DemoContainer style={{ borderRadius: 'var(--radii-2)', boxShadow: '0 2px 48px rgba(19,33,68,0.16), 0 0 0 1px var(--shadows-shadow4)' }}>
+    <DemoContainer
+      style={{
+        borderRadius: '28px',
+        border: '1px solid #000000',
+        boxShadow: '0 2px 48px rgba(19,33,68,0.16), 0 0 0 1px var(--shadows-shadow4)',
+        overflow: 'hidden',
+        transitionProperty: 'all',
+        transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        transitionDuration: '150ms',
+        opacity: open ? '1' : '0',
+        transform: `translateY(${open ? '0' : '-100'})`,
+      }}
+    >
       <ChatWindow.Container>
         <RuntimeAPIProvider {...runtime}>
           <Chat
