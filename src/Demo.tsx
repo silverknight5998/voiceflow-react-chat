@@ -191,8 +191,8 @@ export const Demo: React.FC = () => {
       <span
         style={{
           position: 'absolute',
-          right: '2rem',
-          bottom: '2rem',
+          right: '24px',
+          bottom: '24px',
         }}
       >
         <Launcher onClick={handleLaunch} />
