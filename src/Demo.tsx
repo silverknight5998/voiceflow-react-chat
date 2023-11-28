@@ -34,9 +34,9 @@ export const Demo: React.FC = () => {
     async () => {
       await runtime.launch();
     };
-    return () => {
-      runtime.setStatus(SessionStatus.ENDED);
-    };
+    // return () => {
+    //   runtime.setStatus(SessionStatus.ENDED);
+    // };
   }, []);
 
   useEffect(() => {
