@@ -235,7 +235,7 @@ export const Demo: React.FC = () => {
               avatar={AVATAR}
               withWatermark
               startTime={runtime.session.startTime}
-              // hasEnded={runtime.isStatus(SessionStatus.ENDED)}
+              hasEnded={runtime.isStatus(SessionStatus.ENDED)}
               isLoading={!runtime.session.turns.length}
               onStart={runtime.launch}
               onEnd={handleEnd}
