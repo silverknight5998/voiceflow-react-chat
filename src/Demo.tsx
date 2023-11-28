@@ -201,7 +201,7 @@ export const Demo: React.FC = () => {
       {!open && (
         <span
           style={{
-            position: 'absolute',
+            position: 'fixed',
             right: '2rem',
             bottom: '2rem',
             zIndex: '300',
