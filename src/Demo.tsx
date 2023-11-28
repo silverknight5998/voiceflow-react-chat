@@ -233,7 +233,7 @@ export const Demo: React.FC = () => {
               description="welcome to my assistant"
               image={IMAGE}
               avatar={AVATAR}
-              withWatermark
+              // withWatermark
               startTime={runtime.session.startTime}
               hasEnded={runtime.isStatus(SessionStatus.ENDED)}
               isLoading={!runtime.session.turns.length}
@@ -278,16 +278,17 @@ export const Demo: React.FC = () => {
                 style={
                   isActive
                     ? {
-                        flexDirection: 'column',
-                        justifyContent: 'space-evenly',
-                        width: '100%',
-                        height: '100%',
-                        background: '#262b2a',
-                        position: 'absolute',
-                        display: 'flex',
-                        marginLeft: '0%',
-                        transition: 'ease-in',
-                      }
+                      flexDirection: 'column',
+                      justifyContent: 'space-evenly',
+                      width: '100%',
+                      height: '100%',
+                      background: '#262b2a',
+                      position: 'absolute',
+                      display: 'flex',
+                      marginLeft: '0%',
+                      zIndex: 300,
+                      transition: 'ease-in',
+                    }
                     : { display: 'none', marginLeft: '-100%' }
                 }
               >
@@ -320,7 +321,6 @@ export const Demo: React.FC = () => {
                       stopRecording();
                       setIsActive(false);
                     }}
-                    style={{ width: '60px', height: '60px', borderRadius: '30px', fontSize: '12px', background: 'red' }}
                   ></Button>
                 </div>
               </div>
