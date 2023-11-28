@@ -186,13 +186,14 @@ export const Demo: React.FC = () => {
       mediaRecorder.stop();
     }
   };
+
   if (!open) {
     return (
       <span
         style={{
           position: 'absolute',
-          right: '24px',
-          bottom: '24px',
+          right: '2rem',
+          bottom: '2rem',
         }}
       >
         <Launcher onClick={handleLaunch} />
@@ -200,7 +201,7 @@ export const Demo: React.FC = () => {
     );
   }
   return (
-    <DemoContainer>
+    <DemoContainer style={{ borderRadius: 'var(--radii-2)', boxShadow: '0 2px 48px rgba(19,33,68,0.16), 0 0 0 1px var(--shadows-shadow4)' }}>
       <ChatWindow.Container>
         <RuntimeAPIProvider {...runtime}>
           <Chat
