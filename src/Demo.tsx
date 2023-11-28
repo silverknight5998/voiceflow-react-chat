@@ -1,6 +1,6 @@
 import 'react-calendar/dist/Calendar.css';
 import './app.css';
-import { Chat, ChatWindow, Launcher, RuntimeAPIProvider, SessionStatus, SystemResponse, TurnType, UserResponse, Button } from '@voiceflow/react-chat';
+import { Chat, ChatWindow, RuntimeAPIProvider, SessionStatus, SystemResponse, TurnType, UserResponse, Button } from '@voiceflow/react-chat';
 import { useContext, useState, useEffect, useMemo } from 'react';
 import { match } from 'ts-pattern';
 import axios from 'axios';
@@ -186,20 +186,9 @@ export const Demo: React.FC = () => {
       mediaRecorder.stop();
     }
   };
-
-  if (!open) {
-    return (
-      <span
-        style={{
-          position: 'absolute',
-          right: '2rem',
-          bottom: '2rem',
-        }}
-      >
-        <Launcher onClick={handleLaunch} />
-      </span>
-    );
-  }
+  useEffect(() => {
+    handleLaunch();
+  }, []);
   return (
     <DemoContainer>
       <ChatWindow.Container>
@@ -209,7 +198,6 @@ export const Demo: React.FC = () => {
             description="welcome to my assistant"
             image={IMAGE}
             avatar={AVATAR}
-            withWatermark
             startTime={runtime.session.startTime}
             hasEnded={runtime.isStatus(SessionStatus.ENDED)}
             isLoading={!runtime.session.turns.length}
