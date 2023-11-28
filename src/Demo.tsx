@@ -218,9 +218,8 @@ export const Demo: React.FC = () => {
         <ChatWindow.Container
           style={{
             overflow: 'hidden',
-            boxShadow: '0px 2px 48px rgba(19,33,68,0.16), 0 0 0 1px var(--shadows-shadow4)',
-            border: '1px solid #000000',
-            borderRadius: '28px',
+            boxShadow: '0 2px 48px rgba(19,33,68,0.16), 0 0 0 1px var(--shadows-shadow4)',
+            borderRadius: '10px',
             transitionProperty: 'all',
             transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
             transitionDuration: '150ms',
