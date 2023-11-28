@@ -19,7 +19,7 @@ const IMAGE = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 const AVATAR = 'https://icons8.com/icon/5zuVgEwv1rTz/website';
 
 export const Demo: React.FC = () => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const { runtime } = useContext(RuntimeContext)!;
   const [isActive, setIsActive] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -212,19 +212,20 @@ export const Demo: React.FC = () => {
       )}
       <DemoContainer
         style={{
-          boxShadow: '0 2px 48px rgba(19,33,68,0.16), 0 0 0 1px var(--shadows-shadow4)',
-          transitionProperty: 'all',
-          transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-          transitionDuration: '150ms',
-          opacity: open ? '1' : '0',
-          transform: `translateY(${open ? '0px' : '300px'})`,
+          padding: '4px',
         }}
       >
         <ChatWindow.Container
           style={{
             overflow: 'hidden',
+            boxShadow: '0px 2px 48px rgba(19,33,68,0.16), 0 0 0 1px var(--shadows-shadow4)',
             border: '1px solid #000000',
             borderRadius: '28px',
+            transitionProperty: 'all',
+            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            transitionDuration: '150ms',
+            opacity: open ? '1' : '0',
+            transform: `translateY(${open ? '0px' : '300px'})`,
           }}
         >
           <RuntimeAPIProvider {...runtime}>
