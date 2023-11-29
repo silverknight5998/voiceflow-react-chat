@@ -38,7 +38,6 @@ export const Demo: React.FC = () => {
         let audio = new Audio(url);
         audio.play();
         audio.onended = function () {
-          console.log("stop recording");
           setFlag(false);
         };
       }
@@ -47,7 +46,6 @@ export const Demo: React.FC = () => {
   }, [message]);
 
   const audioPlay = async (text: string) => {
-    console.log(text);
     const res = await axios.post(
       'https://api.tradies-success-academy.com/api/audio',
       {
@@ -120,7 +118,6 @@ export const Demo: React.FC = () => {
     };
     function checkForSilence(inputBuffer: any) {
       const isSilent = isBufferSilent(inputBuffer);
-      // console.log(mediaRecorder.state, isSilent);
       if (isSilent) {
         if (Date.now() - silenceStart > silenceDuration * 1000) {
           if (mediaRecorder.state === 'recording') {
@@ -131,19 +128,7 @@ export const Demo: React.FC = () => {
           }
         }
       } else {
-        // if (mediaRecorder.state === 'inactive' && flag === false && isActive === true) {
-        //   // console.log("restart");
-        //   // startRecording();
-        //   mediaRecorder.start();
-        //   $('#recButton').removeClass('notRec');
-        //   $('#recButton').addClass('Rec');
-        // }
-        // else {
         silenceStart = Date.now();
-        console.log(flag, isActive)
-        // if (flag === false && isActive === true)
-        //   console.log(mediaRecorder.state);
-        // }
       }
     }
 
@@ -179,7 +164,7 @@ export const Demo: React.FC = () => {
 
     setMediaRecorder(mediaRecorder);
   };
-  console.log('flag', flag);
+
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop();
@@ -223,9 +208,9 @@ export const Demo: React.FC = () => {
               description="welcome to my assistant"
               image={IMAGE}
               avatar={AVATAR}
-              // withWatermark
+              withWatermark
               startTime={runtime.session.startTime}
-              // hasEnded={runtime.isStatus(SessionStatus.ENDED)}
+              hasEnded={runtime.isStatus(SessionStatus.ENDED)}
               isLoading={!runtime.session.turns.length}
               onStart={runtime.launch}
               onEnd={handleEnd}
@@ -324,7 +309,6 @@ export const Demo: React.FC = () => {
                     let audio = new Audio(url);
                     audio.play();
                     audio.onended = function () {
-                      console.log("end");
                       $('#recButton').removeClass('notRec');
                       $('#recButton').addClass('Rec');
                       startRecording();
