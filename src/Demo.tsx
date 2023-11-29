@@ -23,66 +23,65 @@ export const Demo: React.FC = () => {
   const { runtime } = useContext(RuntimeContext)!;
   const [isActive, setIsActive] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [resume, setResume] = useState(false);
+  const [flag, setFlag] = useState(false);
   const [text, setText] = useState('');
   const liveAgent = useLiveAgent();
+
   const message = useMemo(() => {
     return text;
   }, [text]);
 
   useEffect(() => {
-    handleOpen();
-  }, []);
-
-  useEffect(() => {
-    const audioPlay = async () => {
-      const res = await axios.post(
-        'https://api.tradies-success-academy.com/api/audio',
-        {
-          transcript: message,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      let byteCharacters = atob(res.data);
-
-      // Create an array of byte numbers from the raw binary data
-      let byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    if (message) {
+      const play = async () => {
+        const url = await audioPlay(message);
+        let audio = new Audio(url);
+        audio.play();
+        audio.onended = function () {
+          console.log("stop recording");
+          setFlag(false);
+        };
       }
-
-      // Create a Blob from the byte numbers
-      let byteArray = new Uint8Array(byteNumbers);
-      let blob = new Blob([byteArray], { type: 'audio/mp3' });
-
-      // Create a URL for the Blob and play the audio
-      let url = URL.createObjectURL(blob);
-      let audio = new Audio(url);
-      audio.play();
-      if (isActive) {
-        startRecording();
-        $('#recButton').removeClass('notRec');
-        $('#recButton').addClass('Rec');
-      }
+      play();
     };
-    if (message) audioPlay();
   }, [message]);
 
-  const handleLaunch = async () => {
-    // await runtime.launch();
-    setOpen(true);
-  };
+  const audioPlay = async (text: string) => {
+    console.log(text);
+    const res = await axios.post(
+      'https://api.tradies-success-academy.com/api/audio',
+      {
+        transcript: text,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    let byteCharacters = atob(res.data);
 
-  const handleOpen = async () => {
+    // Create an array of byte numbers from the raw binary data
+    let byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    // Create a Blob from the byte numbers
+    let byteArray = new Uint8Array(byteNumbers);
+    let blob = new Blob([byteArray], { type: 'audio/mp3' });
+
+    // Create a URL for the Blob and play the audio
+    let url = URL.createObjectURL(blob);
+    return url;
+  };
+  const handleLaunch = async () => {
+    setOpen(true);
     await runtime.launch();
   };
 
   const handleEnd = () => {
-    // runtime.setStatus(SessionStatus.ENDED);
+    runtime.setStatus(SessionStatus.ENDED);
     setOpen(false);
   };
 
@@ -101,7 +100,8 @@ export const Demo: React.FC = () => {
 
     const chunks: any = [];
     mediaRecorder.addEventListener('dataavailable', (event) => {
-      chunks.push(event.data);
+      if (event.data.size > 0)
+        chunks.push(event.data);
     });
 
     const audioContext = new AudioContext();
@@ -112,7 +112,7 @@ export const Demo: React.FC = () => {
     processor.connect(audioContext.destination);
 
     let silenceStart = Date.now();
-    const silenceDuration = 1; // 2 seconds
+    const silenceDuration = 2; // 2 seconds
 
     processor.onaudioprocess = function (event) {
       const inputBuffer = event.inputBuffer.getChannelData(0);
@@ -120,31 +120,30 @@ export const Demo: React.FC = () => {
     };
     function checkForSilence(inputBuffer: any) {
       const isSilent = isBufferSilent(inputBuffer);
+      // console.log(mediaRecorder.state, isSilent);
       if (isSilent) {
         if (Date.now() - silenceStart > silenceDuration * 1000) {
           if (mediaRecorder.state === 'recording') {
-            if (resume) {
-              console.log('pause');
-              mediaRecorder.pause();
-              $('#recButton').removeClass('Rec');
-              $('#recButton').addClass('notRec');
-            } else {
-              console.log('stop');
-              processor.disconnect();
-              source.disconnect();
-              mediaRecorder.stop();
-              setResume(true);
-            }
+            console.log("stop");
+            mediaRecorder.stop();
+            $('#recButton').removeClass('Rec');
+            $('#recButton').addClass('notRec');
           }
         }
       } else {
+        // if (mediaRecorder.state === 'inactive' && flag === false && isActive === true) {
+        //   // console.log("restart");
+        //   // startRecording();
+        //   mediaRecorder.start();
+        //   $('#recButton').removeClass('notRec');
+        //   $('#recButton').addClass('Rec');
+        // }
+        // else {
         silenceStart = Date.now();
-        if (mediaRecorder.state === 'paused') {
-          console.log('resume');
-          mediaRecorder.resume();
-          $('#recButton').removeClass('notRec');
-          $('#recButton').addClass('Rec');
-        }
+        console.log(flag, isActive)
+        // if (flag === false && isActive === true)
+        //   console.log(mediaRecorder.state);
+        // }
       }
     }
 
@@ -159,37 +158,28 @@ export const Demo: React.FC = () => {
     }
 
     mediaRecorder.onstop = async () => {
+      setFlag(true);
       const formData = new FormData();
       const audioBlob = new Blob(chunks);
       formData.append('file', audioBlob, `${runtime.session.userID}.wav`);
       formData.append('name', runtime.session.userID);
-      const response = await axios.post('https://api.tradies-success-academy.com/api/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
 
       const transcripts = await axios.post(
         'https://api.tradies-success-academy.com/api/transcribe',
-        {
-          filename: `${runtime.session.userID}.wav`,
-        },
+        formData,
         {
           headers: {
-            'Content-Type': 'application/json',
-          },
+            'Content-Type': 'multipart/form-data',
+          }
         }
       );
-
-      runtime.reply(transcripts.data);
-      // startRecording();
-      $('#recButton').removeClass('notRec');
-      $('#recButton').addClass('Rec');
+      if (transcripts.data)
+        runtime.reply(transcripts.data);
     };
 
     setMediaRecorder(mediaRecorder);
   };
-
+  console.log('flag', flag);
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop();
@@ -262,7 +252,7 @@ export const Demo: React.FC = () => {
                             //@ts-ignore
                             if (message.text && message.text.length && message.text[0].children && message.text[0].children.length) {
                               //@ts-ignore
-                              setText(message.text[0].children[0].text);
+                              setText(message.text[0].children[0].text !== "" ? message.text[0].children[0].text : message.text[0].children[1].text);
                             }
                             return <SystemResponse.SystemMessage {...props} message={message} />;
                           });
@@ -316,7 +306,7 @@ export const Demo: React.FC = () => {
                 <div style={{ width: '100%', marginBottom: '50%', display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end' }}>
                   <Button
                     id="recButton"
-                    className="Rec"
+                    className="notRec"
                     onClick={() => {
                       stopRecording();
                       setIsActive(false);
@@ -327,9 +317,18 @@ export const Demo: React.FC = () => {
               <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
                 <Button
                   style={{ width: '60px', height: '60px', borderRadius: '30px', marginTop: '12px', background: '#19d473' }}
-                  onClick={() => {
-                    startRecording();
+                  disabled={isActive ? true : false}
+                  onClick={async () => {
                     setIsActive(true);
+                    const url = await audioPlay("Hello, i am lixi and i am here to help you.");
+                    let audio = new Audio(url);
+                    audio.play();
+                    audio.onended = function () {
+                      console.log("end");
+                      $('#recButton').removeClass('notRec');
+                      $('#recButton').addClass('Rec');
+                      startRecording();
+                    };
                   }}
                 >
                   <img style={{ width: '60px', height: '60px' }} src="/assets/record.png" />
